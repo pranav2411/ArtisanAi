@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "buildCommand": "node vercel-build.js",
   "builds": [
     {
       "src": "api/index.py",
@@ -14,9 +15,7 @@
           "app/auth/routes.py",
           "app/models.py",
           "app/utils.py",
-          "templates/**/*.html",
-          "config.py",
-          "requirements-vercel.txt"
+          "config.py"
         ]
       }
     },
