@@ -19,21 +19,20 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
 
-# --- SERVICE ACCOUNT INITIALIZATION ---
-# --- SERVICE ACCOUNT INITIALIZATION ---
+# --- SERVICE ACCOUNT INITIALIZATION (FOR VERCEL & LOCAL) ---
 if not firebase_admin._apps:
-    # Get the credentials from the environment variable
-    firebase_creds_json = os.getenv('FIREBASE_SERVICE_ACCOUNT_JSON')
+    # Get the credentials from the Vercel environment variable
+    firebase_creds_json_str = os.getenv('FIREBASE_SERVICE_ACCOUNT_JSON')
     
-    if firebase_creds_json:
-        # Convert the JSON string from the env var into a dictionary
-        creds_dict = json.loads(firebase_creds_json)
+    if firebase_creds_json_str:
+        # On Vercel: load credentials from the environment variable
+        creds_dict = json.loads(firebase_creds_json_str)
         cred = credentials.Certificate(creds_dict)
         firebase_admin.initialize_app(cred, {
             'storageBucket': os.getenv('FIREBASE_STORAGE_BUCKET')
         })
     else:
-        # Fallback for local development (using the file)
+        # Locally: fallback to using the file
         cred_path = "firebase-service-account-key.json"
         if os.path.exists(cred_path):
             cred = credentials.Certificate(cred_path)
@@ -41,10 +40,12 @@ if not firebase_admin._apps:
                 'storageBucket': os.getenv('FIREBASE_STORAGE_BUCKET')
             })
         else:
-            print("Firebase service account key not found in file or environment variable.")
+            print("CRITICAL ERROR: Firebase service account key not found in file or environment variable.")
 
 db = firestore.client()
 bucket = storage.bucket()
+
+
 # --- API KEY & EMAIL CONFIGURATION ---
 GOOGLE_AI_API_KEY = os.getenv('GOOGLE_AI_API_KEY')
 GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY')
@@ -106,40 +107,28 @@ def firebase_login():
         uid = decoded_token['uid']
         user_doc = db.collection('users').document(uid).get()
 
-        # If the user document already exists in Firestore, log them in
         if user_doc.exists:
             user_data = user_doc.to_dict()
             session['user_id'] = uid
             session['user_type'] = user_data.get('type')
             session['user_name'] = user_data.get('name')
-        # If the user is new (exists in Firebase Auth but not Firestore)
         else:
             user_info = firebase_auth.get_user(uid)
-            # Create a default buyer profile for the new user
             new_user_data = {
-                'id': uid, 
-                'name': 'New User', 
-                'email': user_info.email or '', 
-                'phone': user_info.phone_number,
+                'id': uid, 'name': 'New User', 'email': user_info.email or '', 'phone': user_info.phone_number,
                 'type': 'buyer',
                 'avatar': user_info.photo_url or f'https://placehold.co/100x100/E2E8F0/4A5568?text=NU',
-                'shipping_address': '', 
-                'cart': []
+                'shipping_address': '', 'cart': []
             }
             db.collection('users').document(uid).set(new_user_data)
-            
-            # Log them into the session
             session['user_id'] = uid
             session['user_type'] = 'buyer'
             session['user_name'] = 'New User'
             flash('Welcome! Please complete your profile.', 'success')
 
-        # For both new and existing users, update the session cart
         user_data = db.collection('users').document(uid).get().to_dict()
         session['cart'] = user_data.get('cart', [])
-        
         return jsonify({"status": "success"}), 200
-        
     except Exception as e:
         print(f"Firebase login error: {e}")
         return jsonify({"error": str(e)}), 401
@@ -174,8 +163,12 @@ def logout():
 
 @app.route('/')
 def marketplace():
-    products_ref = db.collection('products').stream()
-    users_ref = db.collection('users').stream()
+    # ADDED A 10-SECOND TIMEOUT FOR DIAGNOSTICS
+    # If the app hangs, it will now crash after 10 seconds with a timeout error,
+    # proving a network block is the issue.
+    products_ref = db.collection('products').get(timeout=10)
+    users_ref = db.collection('users').get(timeout=10)
+    
     products = []
     users = {u.id: u.to_dict() for u in users_ref}
     for p in products_ref:
@@ -183,6 +176,7 @@ def marketplace():
         artisan_id = product_data.get('artisanId')
         if artisan_id in users and users[artisan_id].get('verification_status') == 'verified':
             products.append(product_data)
+            
     artisans_for_map = {k: v for k, v in users.items() if v.get('type') == 'artisan' and v.get('verification_status') == 'verified' and 'coords' in v}
     artisans_json = json.dumps(artisans_for_map)
     return render_template('marketplace.html', users=users, products=products, artisans_json=artisans_json, maps_api_key=GOOGLE_MAPS_API_KEY)
@@ -250,6 +244,15 @@ def settings():
     if 'settings' not in user:
         user['settings'] = {}
     return render_template('shared/settings.html', user=user)
+
+@app.route('/toggle-theme')
+def toggle_theme():
+    current_theme = session.get('theme', 'light')
+    if current_theme == 'dark':
+        session['theme'] = 'light'
+    else:
+        session['theme'] = 'dark'
+    return redirect(request.referrer or url_for('marketplace'))
 
 # --- CART & ORDER ROUTES (BUYER) ---
 
@@ -384,57 +387,65 @@ def dashboard():
     artisan = artisan_doc.to_dict()
     if artisan.get('verification_status') != 'verified':
         return render_template('artisan/verification.html', artisan=artisan)
+    
     active_tab = request.args.get('tab', 'tools')
-    orders_list = []
-    artisan_products = []
+    
+    # Always fetch products for the sidebar and products tab
+    products_ref = db.collection('products').where('artisanId', '==', session['user_id']).stream()
+    artisan_products = [p.to_dict() for p in products_ref]
+    
     products_json = '{}'
-    if active_tab == 'orders':
-        orders_ref = db.collection('orders').where('artisanId', '==', session['user_id']).stream()
-        for doc in orders_ref:
-            order = doc.to_dict()
-            buyer_doc = db.collection('users').document(order['buyerId']).get()
-            product_doc = db.collection('products').document(order['productId']).get()
-            order['buyer'] = buyer_doc.to_dict() if buyer_doc.exists else {}
-            order['product'] = product_doc.to_dict() if product_doc.exists else {}
-            orders_list.append(order)
-    else:
-        products_ref = db.collection('products').where('artisanId', '==', session['user_id']).stream()
-        artisan_products = [p.to_dict() for p in products_ref]
+    if active_tab == 'tools':
         products_json = json.dumps({p['id']: p for p in artisan_products})
-    return render_template('artisan/dashboard.html', artisan=artisan, active_tab=active_tab,
-                           artisan_products=artisan_products, products_json=products_json, orders=orders_list)
+
+    return render_template('artisan/dashboard.html', 
+                           artisan=artisan, 
+                           active_tab=active_tab,
+                           artisan_products=artisan_products, 
+                           products_json=products_json)
 
 @app.route('/add_product', methods=['POST'])
 def add_product():
     if 'user_id' not in session or session.get('user_type') != 'artisan':
         return redirect(url_for('login_page'))
-
+    artisan_doc = db.collection('users').document(session['user_id']).get()
+    artisan = artisan_doc.to_dict()
     product_id = str(uuid.uuid4())
     product_data = {
         'id': product_id, 'name': request.form['name'], 'price': float(request.form['price']),
         'stock': int(request.form['stock']), 'dimensions': request.form['dimensions'],
         'materials': request.form['materials'], 'imageUrl': request.form['imageUrl'],
         'description': request.form['description'], 'artisanId': session['user_id'],
-        'ai_description': '' # Create an empty field for the AI story
+        'ai_description': ''
     }
+    try:
+        prompt = f"""
+        An artisan named {artisan.get('name', 'a local artisan')} from {artisan.get('location', 'India')} who specializes in {artisan.get('craft', 'traditional crafts')} has created a new product.
+        Product Name: "{product_data['name']}"
+        Materials Used: "{product_data['materials']}"
+        Artisan's Description: "{product_data['description']}"
+        Based on this, write an enhanced, single-paragraph product story for an e-commerce website. The tone should be warm, evocative, and focus on the craftsmanship and cultural heritage. Do not use headings or markdown. Just write the paragraph.
+        """
+        response = model.generate_content(prompt)
+        product_data['ai_description'] = response.text
+    except Exception as e:
+        print(f"AI description generation failed: {e}")
+        product_data['ai_description'] = product_data['description']
     db.collection('products').document(product_id).set(product_data)
     flash('New product added successfully!', 'success')
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('dashboard', tab='products'))
 
 @app.route('/generate_ai_story/<product_id>', methods=['POST'])
 def generate_ai_story(product_id):
     if 'user_id' not in session or session.get('user_type') != 'artisan':
         return jsonify({'error': 'Unauthorized'}), 401
-
     try:
         product_ref = db.collection('products').document(product_id)
         product_doc = product_ref.get()
         if not product_doc.exists:
             return jsonify({'error': 'Product not found'}), 404
-        
         product = product_doc.to_dict()
         artisan = db.collection('users').document(product['artisanId']).get().to_dict()
-
         prompt = f"""
         An artisan named {artisan.get('name')} from {artisan.get('location')} who specializes in {artisan.get('craft')} has created a product.
         Product Name: "{product['name']}"
@@ -444,19 +455,14 @@ def generate_ai_story(product_id):
         """
         response = model.generate_content(prompt)
         ai_story = response.text
-
-        # Save the new story to the database
         product_ref.update({'ai_description': ai_story})
-        
         return jsonify({'success': True, 'ai_story': ai_story})
     except Exception as e:
-        # Check for quota error specifically
         if "quota" in str(e).lower():
             return jsonify({'error': 'You have exceeded your daily AI quota. Please try again tomorrow.'}), 429
         print(f"AI story generation failed: {e}")
         return jsonify({'error': 'An error occurred while generating the story.'}), 500
-    
-    
+
 @app.route('/update_order_status', methods=['POST'])
 def update_order_status():
     if 'user_id' not in session or session.get('user_type') != 'artisan':
@@ -477,46 +483,35 @@ def update_order_status():
     flash('Order status updated.', 'success')
     return redirect(url_for('dashboard', tab='orders'))
 
-
-# --- AI TOOL ROUTES (ARTISAN) ---
+# --- AI TOOL ROUTES (ARTISAN & BUYER) ---
 
 @app.route('/ai_chat', methods=['POST'])
 def ai_chat():
     if 'user_id' not in session: return jsonify({'error': 'Unauthorized'}), 401
-
     data = request.json
     user_message = data.get('message', '')
     image_data = data.get('image_data')
-
     try:
-        # --- Image Generation Request ---
         if user_message.lower().strip().startswith('/imagine'):
             prompt = user_message.replace('/imagine', '').strip()
             if not prompt:
                  return jsonify({'reply_type': 'text', 'reply_content': '<p>Please provide a description for the image you want to create. For example: <code>/imagine a rustic wooden bowl filled with spices</code></p>'})
-            
             response = image_model.generate_content(prompt)
             image_url = response.candidates[0].content.parts[0].uri
             return jsonify({'reply_type': 'image', 'reply_content': image_url})
-
-        # --- Standard or Vision-based Chat ---
         prompt = f"You are a helpful AI assistant for an artisan on an e-commerce platform. The user's question is: '{user_message}'. Provide a concise, helpful, and encouraging answer in Markdown format."
-        
         if image_data:
             image_part = {"mime_type": "image/jpeg", "data": image_data}
             prompt = f"You are a helpful AI assistant for an artisan. Analyze the provided image and the user's question. The question is: '{user_message}'. Provide a helpful, encouraging critique or answer in Markdown format."
             response = model.generate_content([prompt, image_part])
         else:
             response = model.generate_content(prompt)
-        
         reply_html = markdown.markdown(response.text)
         return jsonify({'reply_type': 'text', 'reply_content': reply_html})
-
     except Exception as e:
         print(f"AI Chat Error: {e}")
-        return jsonify({'reply_type': 'text', 'reply_content': f"<p>Sorry, I encountered an error: {e}</p>"})
-    
-    
+        return jsonify({'reply_type': 'text', 'reply_content': f"<p>Sorry, I encountered an error. It might be due to API limits. Please try again later.</p>"})
+
 @app.route('/generate', methods=['POST'])
 def generate():
     if 'user_id' not in session or session.get('user_type') != 'artisan':
@@ -549,7 +544,7 @@ def generate():
             return jsonify({'image_url': image_url})
     except Exception as e:
         print(f"Error in /generate route: {e}")
-        return jsonify({'result_html': f"An error occurred: {e}"}), 500
+        return jsonify({'result_html': f"An error occurred. It might be due to API limits. Please try again later."}), 500
 
 @app.route('/brand_kit', methods=['GET'])
 def brand_kit_page():
@@ -593,15 +588,12 @@ def product_chat():
     data = request.get_json()
     user_message = data['message']
     product_id = data['product_id']
-
     product_doc = db.collection('products').document(product_id).get()
     if not product_doc.exists:
         return jsonify({'reply_html': '<p>Sorry, I cannot find details for this product.</p>'})
-    
     product = product_doc.to_dict()
     artisan_doc = db.collection('users').document(product['artisanId']).get()
     artisan = artisan_doc.to_dict()
-
     prompt = f"""
     You are a friendly and helpful shopping assistant chatbot on an e-commerce page for a specific handcrafted product.
     Your goal is to answer the potential buyer's questions based ONLY on the detailed information provided below.
@@ -629,21 +621,6 @@ def product_chat():
     except Exception as e:
         print(f"Product chat error: {e}")
         return jsonify({'reply_html': '<p>Sorry, I had a little trouble thinking of a reply. Please try again.</p>'})
-
-@app.route('/toggle-theme')
-def toggle_theme():
-    # Get the current theme from the session, default to 'light'
-    current_theme = session.get('theme', 'light')
-    
-    # Flip the theme
-    if current_theme == 'dark':
-        session['theme'] = 'light'
-    else:
-        session['theme'] = 'dark'
-        
-    # Redirect back to the page the user was on
-    return redirect(request.referrer or url_for('marketplace'))
-
 
 @app.route('/trends')
 def trends_page():
@@ -767,3 +744,5 @@ if __name__ == '__main__':
         else:
             print(" * NGROK_AUTH_TOKEN not found, ngrok tunnel disabled.")
     app.run(host="0.0.0.0", port=port, debug=debug_mode)
+
+

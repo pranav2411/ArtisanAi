@@ -1,0 +1,62 @@
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Local development
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Local SQLite database
+*.db
+*.sqlite3
+
+# Firebase service account key
+firebase-service-account-key.json
+
+# Local uploads
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+
+# Test files
+*.test.py
+*_test.py
+
+# Vercel
+.vercel

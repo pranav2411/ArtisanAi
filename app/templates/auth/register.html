@@ -1,0 +1,132 @@
+{% extends "auth/base.html" %}
+
+{% block title %}Register - Artisan AI{% endblock %}
+
+{% block heading %}Create a new account{% endblock %}
+
+{% block subheading %}
+    Or
+    <a href="{{ url_for('auth.login') }}" class="font-medium text-indigo-600 hover:text-indigo-500">
+        sign in to your existing account
+    </a>
+{% endblock %}
+
+{% block content %}
+    <form class="space-y-6" action="{{ url_for('auth.register') }}" method="POST">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="space-y-1">
+            <label for="display_name" class="block text-sm font-medium text-gray-700">
+                Full Name
+            </label>
+            <div class="mt-1">
+                <input id="display_name" name="display_name" type="text" autocomplete="name" required
+                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+        </div>
+
+        <div>
+            <label for="email" class="block text-sm font-medium text-gray-700">
+                Email address
+            </label>
+            <div class="mt-1">
+                <input id="email" name="email" type="email" autocomplete="email" required
+                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+        </div>
+
+        <div>
+            <label for="password" class="block text-sm font-medium text-gray-700">
+                Password
+            </label>
+            <div class="mt-1">
+                <input id="password" name="password" type="password" autocomplete="new-password" required
+                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    aria-describedby="password-requirements">
+            </div>
+            <p class="mt-2 text-sm text-gray-500" id="password-requirements">
+                Must be at least 8 characters long
+            </p>
+        </div>
+
+        <div>
+            <label for="user_type" class="block text-sm font-medium text-gray-700">
+                I am a...
+            </label>
+            <div class="mt-1 grid grid-cols-2 gap-3">
+                <div class="relative">
+                    <input class="sr-only peer" type="radio" name="user_type" id="buyer" value="buyer" checked>
+                    <label for="buyer" class="flex flex-col p-4 bg-white border border-gray-300 rounded-lg shadow-sm cursor-pointer focus:outline-none hover:bg-gray-50 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-indigo-500">
+                        <span class="flex items-center text-sm">
+                            <svg class="w-6 h-6 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                            </svg>
+                            Buyer
+                        </span>
+                        <span class="text-xs text-gray-500 mt-1">I want to discover and buy unique handmade products</span>
+                    </label>
+                </div>
+                <div class="relative">
+                    <input class="sr-only peer" type="radio" name="user_type" id="artisan" value="artisan">
+                    <label for="artisan" class="flex flex-col p-4 bg-white border border-gray-300 rounded-lg shadow-sm cursor-pointer focus:outline-none hover:bg-gray-50 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-indigo-500">
+                        <span class="flex items-center text-sm">
+                            <svg class="w-6 h-6 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            Artisan
+                        </span>
+                        <span class="text-xs text-gray-500 mt-1">I create and sell handmade products</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center">
+            <input id="terms" name="terms" type="checkbox" required
+                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+            <label for="terms" class="ml-2 block text-sm text-gray-700">
+                I agree to the <a href="#" class="text-indigo-600 hover:text-indigo-500">Terms of Service</a> and <a href="#" class="text-indigo-600 hover:text-indigo-500">Privacy Policy</a>
+            </label>
+        </div>
+
+        <div>
+            <button type="submit"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Create Account
+            </button>
+        </div>
+    </form>
+
+    <div class="mt-6">
+        <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white text-gray-500">
+                    Or sign up with
+                </span>
+            </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-2 gap-3">
+            <div>
+                <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">Sign up with Google</span>
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
+                    </svg>
+                </a>
+            </div>
+
+            <div>
+                <a href="#" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">Sign up with Phone</span>
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V4a2 2 0 00-2-2H7zm5 18a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

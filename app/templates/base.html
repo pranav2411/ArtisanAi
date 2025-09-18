@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50" data-theme="{{ 'dark' if session.get('theme') == 'dark' else 'light' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}Artisan AI - Empowering Indian artisans with AI-powered tools to showcase and sell their handmade products globally.{% endblock %}">
+    <meta name="author" content="Artisan AI">
+    <meta name="keywords" content="{% block meta_keywords %}handmade, artisans, india, ecommerce, ai tools, crafts, traditional art{% endblock %}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{% block og_title %}Artisan AI{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Empowering Indian artisans with AI-powered tools to showcase and sell their handmade products.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='images/og-image.jpg') }}{% endblock %}">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ request.url }}">
+    <meta name="twitter:title" content="{% block twitter_title %}Artisan AI{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Empowering Indian artisans with AI-powered tools to showcase and sell their handmade products.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ url_for('static', filename='images/og-image.jpg') }}{% endblock %}">
+    
+    <title>{% block title %}Artisan AI{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"></noscript>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        secondary: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                },
+            },
+            variants: {
+                extend: {
+                    opacity: ['disabled'],
+                    cursor: ['disabled'],
+                    backgroundColor: ['active', 'disabled'],
+                    textColor: ['active', 'disabled'],
+                },
+            },
+        }
+    </script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    
+    <!-- Page-specific CSS -->
+    {% block styles %}{% endblock %}
+    
+    <!-- Head scripts -->
+    {% block head_scripts %}{% endblock %}
+    
+    <!-- Google Analytics -->
+    {% if config.GOOGLE_ANALYTICS_ID %}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ config.GOOGLE_ANALYTICS_ID }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ config.GOOGLE_ANALYTICS_ID }}');
+    </script>
+    {% endif %}
+    
+    <!-- Google Maps API -->
+    {% if config.GOOGLE_MAPS_API_KEY %}
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&libraries=places&callback=Function.prototype" async defer></script>
+    {% endif %}
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    
+    <!-- Initialize Firebase -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "{{ config.FIREBASE_API_KEY }}",
+            authDomain: "{{ config.FIREBASE_AUTH_DOMAIN }}",
+            projectId: "{{ config.FIREBASE_PROJECT_ID }}",
+            storageBucket: "{{ config.FIREBASE_STORAGE_BUCKET }}",
+            messagingSenderId: "{{ config.FIREBASE_MESSAGING_SENDER_ID }}",
+            appId: "{{ config.FIREBASE_APP_ID }}"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // Make Firebase available globally
+        window.firebase = firebase;
+    </script>
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <!-- Flash Messages -->
+    <div id="flash-messages" class="fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }} flex items-center p-4 mb-4 rounded-lg shadow-lg transform transition-all duration-300 ease-in-out">
+                    <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-times-circle{% elif category == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} text-lg mr-3"></i>
+                    <span class="flex-1">{{ message }}</span>
+                    <button type="button" class="flash-close ml-4 text-xl" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endwith %}
+    </div>
+    
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="{{ url_for('marketplace') }}" class="flex items-center">
+                        <img class="h-8 w-auto" src="{{ url_for('static', filename='images/logo.svg') }}" alt="Artisan AI">
+                        <span class="ml-2 text-xl font-bold text-gray-900 dark:text-white">Artisan AI</span>
+                    </a>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:ml-6 md:flex md:items-center md:space-x-8">
+                    <a href="{{ url_for('marketplace') }}" class="px-3 py-2 text-sm font-medium {% if request.endpoint == 'marketplace' %}text-primary-600 dark:text-primary-400 border-b-2 border-primary-500{% else %}text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400{% endif %}">
+                        Marketplace
+                    </a>
+                    <a href="{{ url_for('explore') }}" class="px-3 py-2 text-sm font-medium {% if request.endpoint == 'explore' %}text-primary-600 dark:text-primary-400 border-b-2 border-primary-500{% else %}text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400{% endif %}">
+                        Explore
+                    </a>
+                    <a href="{{ url_for('about') }}" class="px-3 py-2 text-sm font-medium {% if request.endpoint == 'about' %}text-primary-600 dark:text-primary-400 border-b-2 border-primary-500{% else %}text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400{% endif %}">
+                        About
+                    </a>
+                    <a href="{{ url_for('contact') }}" class="px-3 py-2 text-sm font-medium {% if request.endpoint == 'contact' %}text-primary-600 dark:text-primary-400 border-b-2 border-primary-500{% else %}text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400{% endif %}">
+                        Contact
+                    </a>
+                    
+                    {% if current_user.is_authenticated and current_user.is_artisan %}
+                        <a href="{{ url_for('artisan.dashboard') }}" class="px-3 py-2 text-sm font-medium {% if request.endpoint.startswith('artisan.') %}text-primary-600 dark:text-primary-400 border-b-2 border-primary-500{% else %}text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400{% endif %}">
+                            Artisan Hub
+                        </a>
+                    {% endif %}
+                </nav>
+                
+                <!-- Right side items -->
+                <div class="flex items-center">
+                    <!-- Search Button (Mobile) -->
+                    <div class="md:hidden mr-2">
+                        <button type="button" class="p-2 rounded-full text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" id="mobile-search-button">
+                            <span class="sr-only">Search</span>
+                            <i class="fas fa-search h-5 w-5"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Search (Desktop) -->
+                    <div class="hidden md:block mr-4">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" id="search-input" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="Search products...">
+                        </div>
+                    </div>
+                    
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" type="button" class="p-2 rounded-full text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 mr-2">
+                        <span class="sr-only">Toggle dark mode</span>
+                        <i id="theme-icon" class="fas fa-moon h-5 w-5"></i>
+                    </button>
+                    
+                    <!-- Cart -->
+                    <div class="relative mr-2">
+                        <a href="{{ url_for('cart') }}" class="p-2 rounded-full text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 relative">
+                            <span class="sr-only">View cart</span>
+                            <i class="fas fa-shopping-cart h-5 w-5"></i>
+                            {% if 'cart' in session and session.cart|length > 0 %}
+                                <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+                                    {{ session.cart|length }}
+                                </span>
+                            {% endif %}
+                        </a>
+                    </div>
+                    
+                    <!-- User Menu -->
+                    {% if current_user.is_authenticated %}
+                        <div class="ml-4 relative" data-dropdown>
+                            <button type="button" class="flex items-center max-w-xs rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" id="user-menu-button" data-dropdown-toggle>
+                                <span class="sr-only">Open user menu</span>
+                                {% if current_user.avatar_url %}
+                                    <img class="h-8 w-8 rounded-full" src="{{ current_user.avatar_url }}" alt="{{ current_user.display_name }}">
+                                {% else %}
+                                    <div class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 dark:text-primary-300 font-medium">
+                                        {{ current_user.display_name[0]|upper }}
+                                    </div>
+                                {% endif %}
+                                <span class="hidden md:inline-block ml-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                    {{ current_user.display_name }}
+                                </span>
+                                <i class="fas fa-chevron-down ml-1 text-gray-400 text-xs"></i>
+                            </button>
+                            
+                            <!-- Dropdown menu -->
+                            <div class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50" role="menu" data-dropdown-menu>
+                                <a href="{{ url_for('profile') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700" role="menuitem">
+                                    <i class="fas fa-user-circle mr-2"></i> Your Profile
+                                </a>
+                                <a href="{{ url_for('orders') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700" role="menuitem">
+                                    <i class="fas fa-shopping-bag mr-2"></i> Your Orders
+                                </a>
+                                <a href="{{ url_for('wishlist') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700" role="menuitem">
+                                    <i class="fas fa-heart mr-2"></i> Wishlist
+                                </a>
+                                <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                                <a href="{{ url_for('settings') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700" role="menuitem">
+                                    <i class="fas fa-cog mr-2"></i> Settings
+                                </a>
+                                <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                                <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-gray-700" role="menuitem">
+                                    <i class="fas fa-sign-out-alt mr-2"></i> Sign out
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="hidden md:flex items-center space-x-2">
+                            <a href="{{ url_for('login') }}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400">
+                                Sign in
+                            </a>
+                            <span class="text-gray-400">or</span>
+                            <a href="{{ url_for('register') }}" class="px-3 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition duration-150 ease-in-out">
+                                Join now
+                            </a>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Mobile menu button -->
+                    <div class="md:hidden ml-2">
+                        <button type="button" class="p-2 rounded-full text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" id="mobile-menu-button">
+                            <span class="sr-only">Open main menu</span>
+                            <i class="fas fa-bars h-5 w-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile menu, show/hide based on menu state. -->
+        <div class="hidden md:hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="{{ url_for('marketplace') }}" class="block pl-3 pr-4 py-2 border-l-4 {% if request.endpoint == 'marketplace' %}border-primary-500 text-primary-700 bg-primary-50 dark:bg-primary-900/30{% else %}border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"{% endif %}>
+                    Marketplace
+                </a>
+                <a href="{{ url_for('explore') }}" class="block pl-3 pr-4 py-2 border-l-4 {% if request.endpoint == 'explore' %}border-primary-500 text-primary-700 bg-primary-50 dark:bg-primary-900/30{% else %}border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"{% endif %}>
+                    Explore
+                </a>
+                <a href="{{ url_for('about') }}" class="block pl-3 pr-4 py-2 border-l-4 {% if request.endpoint == 'about' %}border-primary-500 text-primary-700 bg-primary-50 dark:bg-primary-900/30{% else %}border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"{% endif %}>
+                    About
+                </a>
+                <a href="{{ url_for('contact') }}" class="block pl-3 pr-4 py-2 border-l-4 {% if request.endpoint == 'contact' %}border-primary-500 text-primary-700 bg-primary-50 dark:bg-primary-900/30{% else %}border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"{% endif %}>
+                    Contact
+                </a>
+                
+                {% if current_user.is_authenticated and current_user.is_artisan %}
+                    <a href="{{ url_for('artisan.dashboard') }}" class="block pl-3 pr-4 py-2 border-l-4 {% if request.endpoint.startswith('artisan.') %}border-primary-500 text-primary-700 bg-primary-50 dark:bg-primary-900/30{% else %}border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"{% endif %}>
+                        Artisan Hub
+                    </a>
+                {% endif %}
+            </div>
+            
+            {% if not current_user.is_authenticated %}
+                <div class="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
+                    <div class="space-y-1">
+                        <a href="{{ url_for('login') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                            Sign in
+                        </a>
+                        <a href="{{ url_for('register') }}" class="block px-4 py-2 text-base font-medium text-primary-600 hover:bg-gray-50 hover:text-primary-800 dark:text-primary-400 dark:hover:bg-gray-700">
+                            Create account
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="pt-4 pb-3 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center px-4">
+                        <div class="flex-shrink-0">
+                            {% if current_user.avatar_url %}
+                                <img class="h-10 w-10 rounded-full" src="{{ current_user.avatar_url }}" alt="{{ current_user.display_name }}">
+                            {% else %}
+                                <div class="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 dark:text-primary-300 font-medium">
+                                    {{ current_user.display_name[0]|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="ml-3">
+                            <div class="text-base font-medium text-gray-800 dark:text-white">{{ current_user.display_name }}</div>
+                            <div class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ current_user.email }}</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 space-y-1">
+                        <a href="{{ url_for('profile') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                            Your Profile
+                        </a>
+                        <a href="{{ url_for('orders') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                            Your Orders
+                        </a>
+                        <a href="{{ url_for('wishlist') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                            Wishlist
+                        </a>
+                        <a href="{{ url_for('settings') }}" class="block px-4 py-2 text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                            Settings
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="block px-4 py-2 text-base font-medium text-red-600 hover:bg-red-50 hover:text-red-800 dark:text-red-400 dark:hover:bg-gray-700">
+                            Sign out
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </header>
+    
+    <!-- Mobile Search -->
+    <div class="hidden md:hidden bg-white dark:bg-gray-800 shadow-sm" id="mobile-search">
+        <div class="container mx-auto px-4 py-3">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input type="text" id="mobile-search-input" class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="Search products...">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About -->
+                <div class="col-span-1">
+                    <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">About Artisan AI</h3>
+                    <p class="mt-4 text-gray-600 dark:text-gray-300 text-sm">
+                        Empowering Indian artisans with AI-powered tools to showcase and sell their handmade products globally.
+                    </p>
+                    <div class="mt-4 flex space-x-6">
+                        <a href="#" class="text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300">
+                            <span class="sr-only">Facebook</span>
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300">
+                            <span class="sr-only">Instagram</span>
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300">
+                            <span class="sr-only">Twitter</span>
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300">
+                            <span class="sr-only">Pinterest</span>
+                            <i class="fab fa-pinterest"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="col-span-1">
+                    <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quick Links</h3>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="{{ url_for('about') }}" class="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 text-sm">About Us</a></li>
+                        <li><a href="{{ url_for('contact') }}" class="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 text-sm">Contact Us</a></li>
+                        <li><a href="{{ url_for('faq') }}" class="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 text-sm">FAQs</a></li>
+                        <li><a href="{{ url_for('blog') }}" class="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 text-sm">Blog</a></li>
+                        <li><a href="{{ url_for('careers') }}" class="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 text-sm">Careers</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Customer Service -->
+                <div class="col-span-1">
+                    <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer Service</h3>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="{{ url_for('shipping') }}" class="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 text-sm">Shipping Policy</a></li>
+                        <li><a href="{{ url_for('returns') }}" class="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 text-sm">Return Policy</a></li>
+                        <li><a href="{{ url_for('privacy') }}" class="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 text-sm">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('terms') }}" class="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 text-sm">Terms of Service</a></li>
+                        <li><a href="{{ url_for('contact') }}" class="text-gray-600 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 text-sm">Help Center</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Newsletter -->
+                <div class="col-span-1">
+                    <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Newsletter</h3>
+                    <p class="mt-4 text-gray-600 dark:text-gray-300 text-sm">
+                        Subscribe to our newsletter for the latest updates and offers.
+                    </p>
+                    <form class="mt-4 flex">
+                        <label for="email-address" class="sr-only">Email address</label>
+                        <input id="email-address" name="email" type="email" autocomplete="email" required class="w-full px-4 py-2 border border-r-0 border-gray-300 dark:border-gray-600 rounded-l-md focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white" placeholder="Enter your email">
+                        <button type="submit" class="px-4 py-2 border border-transparent rounded-r-md bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            <span class="sr-only">Subscribe</span>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        We respect your privacy. Unsubscribe at any time.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+                <div class="md:flex md:items-center md:justify-between">
+                    <div class="flex justify-center md:justify-start space-x-6">
+                        <img src="{{ url_for('static', filename='images/payment-methods.png') }}" alt="Payment Methods" class="h-8">
+                    </div>
+                    <div class="mt-8 md:mt-0 text-center md:text-right">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            &copy; {{ now.year }} Artisan AI. All rights reserved.
+                        </p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Made with <i class="fas fa-heart text-red-500"></i> in India
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-6 right-6 p-3 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-opacity duration-300 opacity-0 invisible">
+        <i class="fas fa-arrow-up"></i>
+        <span class="sr-only">Back to top</span>
+    </button>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            <p class="mt-4 text-gray-700 dark:text-gray-300">Loading...</p>
+        </div>
+    </div>
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Page-specific JavaScript -->
+    {% block scripts %}{% endblock %}
+    
+    <!-- Initialize page -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Back to top button
+            const backToTopButton = document.getElementById('back-to-top');
+            
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    backToTopButton.classList.remove('opacity-0', 'invisible');
+                    backToTopButton.classList.add('opacity-100', 'visible');
+                } else {
+                    backToTopButton.classList.remove('opacity-100', 'visible');
+                    backToTopButton.classList.add('opacity-0', 'invisible');
+                }
+            });
+            
+            backToTopButton.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', () => {
+                    const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+                    mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+            
+            // Mobile search toggle
+            const mobileSearchButton = document.getElementById('mobile-search-button');
+            const mobileSearch = document.getElementById('mobile-search');
+            
+            if (mobileSearchButton && mobileSearch) {
+                mobileSearchButton.addEventListener('click', () => {
+                    mobileSearch.classList.toggle('hidden');
+                });
+            }
+            
+            // Initialize tooltips
+            const tooltipTriggers = document.querySelectorAll('[data-tooltip]');
+            tooltipTriggers.forEach(trigger => {
+                const tooltipId = trigger.getAttribute('data-tooltip');
+                const tooltip = document.getElementById(tooltipId);
+                
+                if (tooltip) {
+                    trigger.addEventListener('mouseenter', () => {
+                        tooltip.classList.remove('hidden');
+                    });
+                    
+                    trigger.addEventListener('mouseleave', () => {
+                        tooltip.classList.add('hidden');
+                    });
+                    
+                    // For touch devices
+                    trigger.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        tooltip.classList.toggle('hidden');
+                    });
+                }
+            });
+            
+            // Close tooltips when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('[data-tooltip]')) {
+                    document.querySelectorAll('.tooltip').forEach(tooltip => {
+                        tooltip.classList.add('hidden');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
