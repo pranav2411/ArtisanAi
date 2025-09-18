@@ -85,12 +85,87 @@ tests/
 test_*.py
 *_test.py
 
-# Keep these
+# Large files and directories
+*.zip
+*.tar.gz
+*.mp4
+*.mp3
+*.wav
+*.flac
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.db3
+*.s3db
+*.sqlitedb
+*.sqlite3
+*.db-journal
+*.sqlite-journal
+*.sqlite3-journal
+*.db-wal
+*.sqlite-wal
+*.sqlite3-wal
+*.db-shm
+*.sqlite-shm
+*.sqlite3-shm
+*.db-*
+*.sqlite-*
+*.sqlite3-*
+*.db.*
+*.sqlite.*
+*.sqlite3.*
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Python packaging
+*.egg
+*.egg-info/
+
+# Build artifacts
+build/
+dist/
+
+# Documentation
+docs/_build/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# PyCharm
+.idea/
+
+# Keep only necessary files
 !vercel_build.sh
 !vercel_build.bat
 !vercel_entrypoint.py
 !vercel.json
 !requirements-vercel.txt
+!app.py
+!config.py
+!api/
+!app/
+!templates/
+!static/
+!app/static/
+!app/templates/
 *.egg
 
 # Environment

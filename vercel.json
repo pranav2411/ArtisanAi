@@ -7,12 +7,16 @@
       "config": {
         "maxLambdaSize": "50mb",
         "includeFiles": [
-          "app/**",
-          "templates/**",
-          "*.py",
-          "*.json",
-          "requirements-vercel.txt",
-          "config.py"
+          "app/__init__.py",
+          "app/api/__init__.py",
+          "app/api/routes.py",
+          "app/auth/__init__.py",
+          "app/auth/routes.py",
+          "app/models.py",
+          "app/utils.py",
+          "templates/**/*.html",
+          "config.py",
+          "requirements-vercel.txt"
         ]
       }
     },
