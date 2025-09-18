@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="max-w-5xl mx-auto">
+    <div class="text-center mb-12">
+        <h1 class="text-5xl font-extrabold text-slate-800 dark:text-white">Market Trends for {{ craft_category }}</h1>
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">Use these AI-powered insights to inspire your next collection.</p>
+    </div>
+    <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg">
+        <div class="prose dark:prose-invert max-w-none">
+            {{ trend_report|safe }}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+
+# Firebase credentials
+firebase-service-account-key.json
+
+# IDE files
+.vscode/

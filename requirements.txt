@@ -1,0 +1,7 @@
+Flask
+google-generativeai
+pyngrok
+firebase-admin
+markdown
+python-dotenv
+gunicorn

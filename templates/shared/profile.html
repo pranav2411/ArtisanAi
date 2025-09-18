@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-8">
+        <div class="flex items-center justify-between">
+             <div class="flex items-center space-x-6">
+                <img class="h-24 w-24 rounded-full" src="{{ user.avatar }}" alt="Profile picture">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ user.name }}</h1>
+                    <p class="text-lg text-indigo-600 font-semibold capitalize">{{ user.type }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ user.email or user.phone }}</p>
+                </div>
+            </div>
+            <a href="{{ url_for('edit_profile') }}" class="bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-4 py-2 rounded-lg font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 text-sm">Edit Profile</a>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+        {% if user.type == 'artisan' %}
+            <div class="space-y-4">
+                <div><strong class="font-semibold text-gray-700 dark:text-gray-300">Craft:</strong> <span class="text-gray-600 dark:text-gray-400">{{ user.craft }}</span></div>
+                <div><strong class="font-semibold text-gray-700 dark:text-gray-300">Location:</strong> <span class="text-gray-600 dark:text-gray-400">{{ user.location }}</span></div>
+                 <div><strong class="font-semibold text-gray-700 dark:text-gray-300">Verification Status:</strong> <span class="font-semibold capitalize px-2 py-1 rounded-full
+                    {% if user.verification_status == 'verified' %} bg-green-100 text-green-800
+                    {% elif user.verification_status == 'pending' or user.verification_status == 'submitted' %} bg-yellow-100 text-yellow-800
+                    {% else %} bg-red-100 text-red-800 {% endif %}">
+                    {{ user.verification_status }}</span>
+                </div>
+            </div>
+        {% else %}
+            <div class="space-y-4">
+                <div><strong class="font-semibold text-gray-700 dark:text-gray-300">Shipping Address:</strong> <span class="text-gray-600 dark:text-gray-400">{{ user.shipping_address }}</span></div>
+                <div><strong class="font-semibold text-gray-700 dark:text-gray-300">Reward Balance:</strong> <span class="text-gray-600 dark:text-gray-400">₹{{ user.get('reward_balance', 0) }}</span></div>
+                <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white">Community Scout Program</h2>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2">Help us verify local artisans! Visit an artisan's workshop, take a photo, and upload it to earn rewards and build a more trustworthy community.</p>
+                    <form action="{{ url_for('scout_upload') }}" method="POST" enctype="multipart/form-data" class="mt-4 space-y-4">
+                        <div>
+                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Artisan</label>
+                             <select name="artisan_id" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-200">
+                                {% for artisan in unverified_artisans %}
+                                <option value="{{ artisan.id }}">{{ artisan.name }} ({{ artisan.craft }} in {{ artisan.location }})</option>
+                                {% else %}
+                                <option disabled>No artisans awaiting community verification.</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Upload Workshop Photo</label>
+                            <input type="file" name="workshop_photo" required class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700">Submit for Reward</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Mode Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // This script runs first to prevent the "flash" of the wrong theme
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+</head>
+<body class="bg-white dark:bg-slate-900 transition-colors duration-300">
+
+    <div class="min-h-screen flex flex-col items-center justify-center space-y-8">
+        <h1 class="text-4xl font-bold text-slate-800 dark:text-white">Dark Mode Test Page</h1>
+
+        <div class="p-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center space-x-4">
+            <span class="font-medium text-gray-700 dark:text-gray-300">Toggle Theme</span>
+            <button id="theme-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none bg-gray-200 dark:bg-indigo-500">
+                <span id="theme-toggle-switch" class="inline-block w-4 h-4 transform bg-white rounded-full transition-transform translate-x-0 dark:translate-x-5"></span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const toggle = document.getElementById('theme-toggle');
+        const toggleSwitchEl = document.getElementById('theme-toggle-switch');
+
+        const applyTheme = () => {
+            if (localStorage.theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                toggle.classList.add('bg-indigo-500');
+                toggleSwitchEl.classList.add('translate-x-5');
+            } else {
+                document.documentElement.classList.remove('dark');
+                toggle.classList.remove('bg-indigo-500');
+                toggleSwitchEl.classList.remove('translate-x-5');
+            }
+        }
+
+        const toggleTheme = () => {
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.theme = 'light';
+            } else {
+                localStorage.theme = 'dark';
+            }
+            applyTheme();
+        };
+
+        if (toggle) {
+            toggle.addEventListener('click', toggleTheme);
+        }
+
+        // We call this once on load to make sure the toggle button's visual state is correct.
+        applyTheme();
+    </script>
+
+</body>
+</html>

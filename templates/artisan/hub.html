@@ -1,0 +1,148 @@
+{% extends "layout.html" %}
+{% block content %}
+<main class.="container mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto">
+    <div class="mb-12">
+        <h1 class="text-5xl font-extrabold text-slate-800 dark:text-white">Welcome to your Artisan Hub</h1>
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">This is your command center for creating, managing, and growing your craft business with the power of AI.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <a href="{{ url_for('dashboard', tab='orders') }}" class="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-4 border-transparent hover:border-sky-500">
+            <div class="flex items-center justify-center h-16 w-16 rounded-full bg-sky-100 dark:bg-sky-900/50 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-sky-600 dark:text-sky-400"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Manage Orders</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">View incoming sales and update shipping status for your customers.</p>
+        </a>
+
+        <a href="{{ url_for('dashboard', tab='products') }}" class="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-4 border-transparent hover:border-emerald-500">
+             <div class="flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/50 mb-4">
+               <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600 dark:text-emerald-400"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Manage Products</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">Add new products and generate AI-powered descriptions.</p>
+        </a>
+
+        <a href="{{ url_for('dashboard', tab='tools') }}" class="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-4 border-transparent hover:border-indigo-500">
+            <div class="flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100 dark:bg-indigo-900/50 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600 dark:text-indigo-400"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><path d="M18 10h.01"/><path d="M12 21a6 6 0 0 0-9-9 9 9 0 1 1 9 9Z"/><path d="M6 14h.01"/><path d="M21 12a6 6 0 0 0-9-9 9 9 0 1 0 9 9Z"/><path d="M14 6h.01"/></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">AI Toolkit</h2>
+            <p class="text-slate-500 dark:text-slate-400 mt-2">Access powerful AI tools for branding, product stories, and market analysis.</p>
+        </a>
+    </div>
+
+    <div class="mt-12 bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8">
+        <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">AI Artisan Assistant</h2>
+        <div id="chat-history" class="h-64 overflow-y-auto border dark:border-slate-700 rounded-lg p-4 mb-4 bg-slate-50 dark:bg-slate-900">
+            <div class="text-slate-500">Ask me for business advice, analyze an image, or type `/imagine` to create a new one...</div>
+        </div>
+        
+        <div id="image-preview-container" class="hidden items-center space-x-2 mb-2 p-2 bg-slate-200 dark:bg-slate-700 rounded-lg max-w-xs">
+            <img id="image-preview" src="" alt="Image preview" class="w-12 h-12 rounded object-cover">
+            <span id="image-name" class="text-sm text-slate-600 dark:text-slate-300 truncate"></span>
+            <button onclick="removeImage()" class="text-red-500 hover:text-red-700 text-2xl font-bold">&times;</button>
+        </div>
+        <div class="flex space-x-2 items-center">
+            <label for="chat-image-upload" class="cursor-pointer p-3 rounded-md bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-slate-600 dark:text-slate-300"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            </label>
+            <input id="chat-image-upload" type="file" class="hidden" accept="image/*">
+            <input id="chat-input" type="text" placeholder="Ask for advice, or type /imagine to create an image..." class="flex-grow px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700">
+            <button id="chat-send" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700">Send</button>
+        </div>
+        </div>
+</div>
+</main>
+{% endblock %}
+{% block scripts %}
+<script>
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
+    const chatHistory = document.getElementById('chat-history');
+    const imageUpload = document.getElementById('chat-image-upload');
+    const imagePreviewContainer = document.getElementById('image-preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    const imageName = document.getElementById('image-name');
+    let imageBase64 = null;
+
+    // --- Image Handling ---
+    imageUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                imageBase64 = reader.result.split(',')[1];
+                imagePreview.src = reader.result;
+                imageName.textContent = file.name;
+                imagePreviewContainer.classList.remove('hidden');
+                imagePreviewContainer.classList.add('flex');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function removeImage() {
+        imageBase64 = null;
+        imageUpload.value = ''; // Reset file input
+        imagePreviewContainer.classList.add('hidden');
+        imagePreviewContainer.classList.remove('flex');
+    }
+
+    // --- Message Handling ---
+    const appendMessage = (data, sender) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('mb-2', 'p-2', 'rounded-lg', 'max-w-md', 'w-fit');
+        
+        if (sender === 'user') {
+            messageDiv.classList.add('bg-indigo-500', 'text-white', 'self-end', 'ml-auto');
+            if(data.text) messageDiv.textContent = data.text;
+            if(data.image) {
+                const img = document.createElement('img');
+                img.src = data.image;
+                img.classList.add('rounded-lg', 'mt-2', 'max-w-xs');
+                messageDiv.appendChild(img);
+            }
+        } else { // AI sender
+            messageDiv.classList.add('bg-slate-200', 'dark:bg-slate-700', 'self-start', 'mr-auto', 'prose', 'dark:prose-invert', 'max-w-full');
+            if(data.reply_type === 'image') {
+                messageDiv.innerHTML = `<p>Here is the image you requested:</p><img src="${data.reply_content}" class="w-full h-auto rounded-lg shadow-md">`;
+            } else {
+                messageDiv.innerHTML = data.reply_content;
+            }
+        }
+        chatHistory.appendChild(messageDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    };
+
+    const handleChat = async () => {
+        const userInput = chatInput.value;
+        if (!userInput.trim() && !imageBase64) return;
+
+        appendMessage({ text: userInput, image: imageBase64 ? imagePreview.src : null }, 'user');
+        chatInput.value = '';
+        chatSend.disabled = true;
+
+        const response = await fetch("{{ url_for('ai_chat') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userInput, image_data: imageBase64 })
+        });
+        
+        removeImage(); // Clear image after sending
+        const data = await response.json();
+        appendMessage(data, 'ai');
+        chatSend.disabled = false;
+        chatInput.focus();
+    };
+
+    chatSend.addEventListener('click', handleChat);
+    chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleChat();
+        }
+    });
+</script>
+{% endblock %}

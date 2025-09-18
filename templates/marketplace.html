@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div class="flex flex-col justify-center">
+            <h1 class="text-5xl md:text-6xl font-extrabold text-slate-800 dark:text-white tracking-tighter">Art That Tells a Story.</h1>
+            <p class="mt-4 text-lg text-slate-600 dark:text-slate-400 max-w-xl">Discover authentic, handcrafted treasures from verified artisans across India. Each piece is a legacy, connecting you to the culture it comes from.</p>
+        </div>
+        <div class="h-96 lg:h-full min-h-[400px]">
+            <div id="map" class="w-full h-full rounded-2xl shadow-inner-lg"></div>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+        {% for product in products %}
+            {% set artisan = users.get(product.artisanId, {}) %}
+            <a href="{{ url_for('product_page', product_id=product.id) }}" class="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-transform duration-300 border border-slate-200 dark:border-slate-700 group">
+                <img src="{{ product.imageUrl }}" alt="{{ product.name }}" class="w-full h-60 object-cover" />
+                <div class="p-5">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white">{{ product.name }}</h3>
+                    <div class="flex items-center mt-2">
+                        <img src="{{ artisan.avatar }}" class="w-8 h-8 rounded-full mr-2" alt="{{ artisan.name }}"/>
+                        <div>
+                            <p class="text-sm font-semibold text-indigo-700 dark:text-indigo-400">{{ artisan.name }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">{{ artisan.location }}</p>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 dark:text-slate-300 text-sm mt-3 h-14 overflow-hidden">{{ product.description }}</p>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-2xl font-bold text-slate-800 dark:text-white">₹{{ "%.2f"|format(product.price) }}</span>
+                        <div class="bg-slate-800 dark:bg-indigo-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-slate-900 dark:hover:bg-indigo-500 transition-colors">View Details</div>
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries","marker");a.src=`https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})(async () => { const artisans = {{ artisans_json|safe }}; const mapDiv = document.getElementById('map'); if (!mapDiv) return; const { Map } = await google.maps.importLibrary("maps"); const { AdvancedMarkerElement } = await google.maps.importLibrary("marker"); const map = new Map(mapDiv, { center: { lat: 24, lng: 78 }, zoom: 5, mapId: 'ARTISAN_AI_MAP', disableDefaultUI: true }); for (const artisanId in artisans) { const artisan = artisans[artisanId]; if (artisan.type === 'artisan' && artisan.coords) { new AdvancedMarkerElement({ map, position: artisan.coords, title: `${artisan.name} (${artisan.craft})` }); } } })();</script>
+{% endblock %}

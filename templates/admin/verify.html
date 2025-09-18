@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-6">Artisan Verification Dashboard</h1>
+    <div class="bg-white dark:bg-slate-800 rounded-lg shadow overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+            <thead class="bg-gray-50 dark:bg-slate-700">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Craft</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Documents</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Scout Photos</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Action</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                {% for artisan in artisans %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ artisan.name }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ artisan.craft }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ artisan.verification_status }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {% if artisan.verification_docs %}
+                            {% for key, value in artisan.verification_docs.items() %}
+                                <a href="{{ value if value is string else value[0] }}" target="_blank" class="text-indigo-600 hover:text-indigo-500">{{ key }}</a><br>
+                            {% endfor %}
+                        {% else %} No docs {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {% if artisan.scout_submissions %}
+                            {% for submission in artisan.scout_submissions %}
+                                <a href="{{ submission.photoUrl }}" target="_blank" class="text-indigo-600 hover:text-indigo-500">View Photo</a><br>
+                            {% endfor %}
+                        {% else %} None {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <a href="{{ url_for('admin_approve', uid=artisan.id) }}" class="text-green-600 hover:text-green-900">Approve</a> |
+                        <a href="{{ url_for('admin_reject', uid=artisan.id) }}" class="text-red-600 hover:text-red-900">Reject</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500 dark:text-gray-400">
+                        No artisans are currently awaiting verification.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

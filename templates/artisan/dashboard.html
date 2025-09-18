@@ -1,0 +1,168 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="flex h-[calc(100vh-150px)]">
+    <div class="w-1/4 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 p-6 flex flex-col">
+        <div class="flex items-center mb-8">
+            <img src="{{ artisan.avatar }}" class="w-12 h-12 rounded-full mr-4" alt="{{ artisan.name }}" />
+            <div>
+                <h2 class="font-bold text-lg text-slate-800 dark:text-white">{{ artisan.name }}</h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400">{{ artisan.craft }}</p>
+            </div>
+        </div>
+
+        <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
+            <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                <a href="{{ url_for('dashboard', tab='tools') }}" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {% if active_tab == 'tools' %} tab-active {% else %} border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 {% endif %}">AI Tools</a>
+                <a href="{{ url_for('dashboard', tab='products') }}" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {% if active_tab == 'products' %} tab-active {% else %} border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 {% endif %}">My Products</a>
+            </nav>
+        </div>
+
+        {% if active_tab == 'tools' %}
+            <a href="{{ url_for('brand_kit_page') }}" class="w-full flex items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 mb-4 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><path d="M18 10h.01"/><path d="M12 21a6 6 0 0 0-9-9 9 9 0 1 1 9 9Z"/><path d="M6 14h.01"/><path d="M21 12a6 6 0 0 0-9-9 9 9 0 1 0 9 9Z"/><path d="M14 6h.01"/></svg>
+                AI Brand Kit
+            </a>
+            <a href="{{ url_for('trends_page') }}" class="w-full flex items-center justify-center bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-teal-600 hover:to-cyan-700 mb-6 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                AI Market Trends
+            </a>
+            <div class="mb-6">
+                <label for="product-select" class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2 block">Your Products ({{ artisan_products|length }})</label>
+                {% if artisan_products %}
+                <select id="product-select" class="w-full p-2.5 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700">
+                    {% for p in artisan_products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+                </select>
+                {% else %}
+                <p class="text-sm text-slate-500 bg-slate-100 dark:bg-slate-700 p-3 rounded-lg">You haven't added any products yet.</p>
+                {% endif %}
+            </div>
+            <nav class="space-y-2 mb-6">
+                <p class="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">AI Product Tools</p>
+                <button data-tool="vision" class="ai-tool-btn w-full flex items-center p-3 rounded-lg text-left transition-colors bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-semibold">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span class="ml-3">AI Vision Analysis</span>
+                </button>
+                <button data-tool="story" class="ai-tool-btn w-full flex items-center p-3 rounded-lg text-left transition-colors text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    <span class="ml-3">Product Story & SEO</span>
+                </button>
+                 <button data-tool="photo" class="ai-tool-btn w-full flex items-center p-3 rounded-lg text-left transition-colors text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                    <span class="ml-3">AI Product Photography</span>
+                </button>
+            </nav>
+        {% else %}
+             <p class="text-sm text-gray-600 dark:text-gray-400">Add new products and generate AI-powered descriptions for them.</p>
+        {% endif %}
+
+        <div class="mt-auto">
+            <button onclick="document.getElementById('addProductModal').style.display='flex'" class="w-full bg-slate-800 dark:bg-slate-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-slate-900 dark:hover:bg-slate-500">Add New Product</button>
+        </div>
+    </div>
+
+    <div class="w-3/4 bg-slate-50 dark:bg-slate-900 flex">
+        {% if active_tab == 'tools' %}
+            <div id="left-pane" class="w-1/2 p-8 overflow-y-auto">
+                </div>
+            <div class="w-1/2 bg-white dark:bg-slate-800 p-8 border-l border-slate-200 dark:border-slate-700 overflow-y-auto">
+                <h3 class="text-xl font-semibold text-slate-800 dark:text-white mb-4">AI Generated Results</h3>
+                <div id="results-container" class="prose dark:prose-invert text-slate-600 dark:text-slate-300">
+                    <div class="text-slate-400 dark:text-slate-500">Select a product and a tool to begin...</div>
+                </div>
+            </div>
+        {% else %}
+            <div class="p-8 w-full overflow-y-auto">
+                <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-6">My Products</h1>
+                <div class="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden">
+                    <table class="min-w-full">
+                        <thead class="bg-gray-50 dark:bg-slate-700">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Product Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Stock</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">AI Story</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                            {% for product in artisan_products %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ product.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">₹{{ product.price }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ product.stock }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    {% if product.ai_description %}
+                                        <span class="text-green-500">Generated</span>
+                                    {% else %}
+                                        <button onclick="generateStory('{{ product.id }}', this)" class="text-indigo-600 hover:text-indigo-900">✨ Generate</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="4" class="text-center py-4 text-gray-500 dark:text-gray-400">No products added yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="addProductModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center hidden"><form method="POST" action="{{ url_for('add_product') }}" class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 max-w-2xl w-full m-4 space-y-4"><h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Add a New Product</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Product Name</label><input name="name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Price (₹)</label><input name="price" type="number" step="0.01" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Stock Quantity</label><input name="stock" type="number" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dimensions</label><input name="dimensions" placeholder="e.g. 10&quot; H x 5&quot; W" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700"></div></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Materials</label><input name="materials" placeholder="e.g. Ceramic Clay, Natural Glazes" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Image URL</label><input name="imageUrl" type="url" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label><textarea name="description" required rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700"></textarea></div><div class="flex justify-end space-x-4 pt-4"><button type="button" onclick="document.getElementById('addProductModal').style.display='none'" class="px-6 py-2 rounded-lg text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-600 hover:bg-slate-200 font-semibold">Cancel</button><button type="submit" class="px-6 py-2 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 font-semibold">Save Product</button></div></form></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function generateStory(productId, button) {
+    button.disabled = true;
+    button.textContent = 'Generating...';
+    
+    const response = await fetch(`/generate_ai_story/${productId}`, { method: 'POST' });
+    
+    if (response.ok) {
+        button.parentElement.innerHTML = '<span class="text-green-500">Generated</span>';
+    } else {
+        const data = await response.json();
+        alert('Error: ' + data.error);
+        button.disabled = false;
+        button.textContent = '✨ Generate';
+    }
+}
+</script>
+{% if active_tab == 'tools' %}
+<script>
+    const products = {{ products_json|safe }}; 
+    let currentTool = 'vision'; 
+    let imageBase64 = '';
+    const leftPane = document.getElementById('left-pane'); 
+    const resultsContainer = document.getElementById('results-container'); 
+    const productSelect = document.getElementById('product-select');
+    function renderToolUI() {
+        if (!productSelect || !productSelect.value) {
+            leftPane.innerHTML = '<p class="text-slate-500">Please add a product to use the AI Product Tools.</p>';
+            resultsContainer.innerHTML = ''; return;
+        }
+        const selectedProductId = productSelect.value;
+        const selectedProduct = products[selectedProductId];
+        const toolUIs = {'vision': `<h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">AI Vision Analysis</h1><p class="text-slate-500 dark:text-slate-400 mb-8">Let's craft the perfect digital presence for your masterpiece.</p><div class="space-y-4"><p class="text-slate-600 dark:text-slate-300">Upload your product photo. Our AI will analyze it and provide expert feedback.</p><div class="w-full h-64 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg flex items-center justify-center bg-white dark:bg-slate-700 overflow-hidden"><img id="image-preview" src="${selectedProduct.imageUrl}" class="w-full h-full object-contain" alt="Product for analysis" /></div><input type="file" id="image-upload" accept="image/*" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/></div>`,'story': `<h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">Product Story & SEO</h1><p class="text-slate-500 dark:text-slate-400 mb-8">Generate an emotional, search-friendly story for your product.</p><div class="w-full h-80 rounded-lg overflow-hidden shadow-md"><img src="${selectedProduct.imageUrl}" class="w-full h-full object-cover" alt="Selected Product"/></div>`,'photo': `<h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2">AI Product Photography</h1><p class="text-slate-500 dark:text-slate-400 mb-8">Generate a stunning new lifestyle photo for your product.</p><div class="w-full h-80 rounded-lg overflow-hidden shadow-md"><img src="${selectedProduct.imageUrl}" class="w-full h-full object-cover" alt="Selected Product"/></div>`};
+        leftPane.innerHTML = toolUIs[currentTool] + `<div class="mt-8"><button id="generate-btn" class="w-full flex items-center justify-center bg-indigo-800 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-indigo-900 disabled:opacity-50 transition-all duration-300 shadow-md">Generate</button></div>`;
+        if (currentTool === 'vision') { document.getElementById('image-upload').addEventListener('change', handleImageUpload); }
+        document.getElementById('generate-btn').addEventListener('click', handleGenerate);
+    }
+    function handleImageUpload(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onloadend = () => { document.getElementById('image-preview').src = reader.result; imageBase64 = reader.result.split(',')[1]; }; reader.readAsDataURL(file); }
+    async function handleGenerate() {
+        if (!productSelect.value) { alert("Please select a product first."); return; }
+        const generateBtn = document.getElementById('generate-btn'); generateBtn.disabled = true; generateBtn.innerHTML = '<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>'; resultsContainer.innerHTML = '<div class="space-y-4 animate-pulse"><div class="h-4 bg-slate-200 dark:bg-slate-700 rounded w-full"></div><div class="h-4 bg-slate-200 dark:bg-slate-700 rounded w-5/6"></div><div class="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div></div>';
+        const payload = { tool: currentTool, product_id: productSelect.value, image_data: currentTool === 'vision' ? imageBase64 : null };
+        const response = await fetch("{{ url_for('generate') }}", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const data = await response.json();
+        if (data.image_url) { resultsContainer.innerHTML = `<img src="${data.image_url}" class="w-full h-auto rounded-lg shadow-md">`; } else { resultsContainer.innerHTML = data.result_html; }
+        generateBtn.disabled = false; generateBtn.innerHTML = 'Generate';
+    }
+    document.querySelectorAll('.ai-tool-btn').forEach(btn => { btn.addEventListener('click', () => { currentTool = btn.dataset.tool; document.querySelectorAll('.ai-tool-btn').forEach(b => { b.classList.remove('bg-indigo-100', 'dark:bg-indigo-900/50', 'text-indigo-700', 'dark:text-indigo-300', 'font-semibold'); b.classList.add('text-slate-700', 'dark:text-slate-300', 'hover:bg-slate-100', 'dark:hover:bg-slate-700'); }); btn.classList.add('bg-indigo-100', 'dark:bg-indigo-900/50', 'text-indigo-700', 'dark:text-indigo-300', 'font-semibold'); btn.classList.remove('text-slate-700', 'dark:text-slate-300', 'hover:bg-slate-100', 'dark:hover:bg-slate-700'); renderToolUI(); }); });
+    if (productSelect) { productSelect.addEventListener('change', renderToolUI); }
+    renderToolUI();
+</script>
+{% endif %}
+{% endblock %}

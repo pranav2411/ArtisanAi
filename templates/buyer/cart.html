@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-6">Your Shopping Cart</h1>
+    {% if cart_items %}
+    <div class="bg-white dark:bg-slate-800 rounded-lg shadow">
+        <ul role="list" class="divide-y divide-gray-200 dark:divide-slate-700">
+            {% for item in cart_items %}
+            <li class="flex py-6 px-4">
+                <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200 dark:border-slate-700">
+                    <img src="{{ item.imageUrl }}" alt="{{ item.name }}" class="h-full w-full object-cover object-center">
+                </div>
+                <div class="ml-4 flex flex-1 flex-col">
+                    <div>
+                        <div class="flex justify-between text-base font-medium text-gray-900 dark:text-white">
+                            <h3>{{ item.name }}</h3>
+                            <p class="ml-4">₹{{ "%.2f"|format(item.price) }}</p>
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Sold by {{ item.artisan.name }}</p>
+                    </div>
+                    <div class="flex flex-1 items-end justify-between text-sm">
+                        <p class="text-gray-500 dark:text-gray-400">Qty 1</p>
+                        <div class="flex">
+                            <a href="{{ url_for('remove_from_cart', product_id=item.id) }}" type="button" class="font-medium text-indigo-600 hover:text-indigo-500">Remove</a>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="border-t border-gray-200 dark:border-slate-700 py-6 px-4">
+            <div class="flex justify-between text-base font-medium text-gray-900 dark:text-white">
+                <p>Subtotal</p>
+                <p>₹{{ "%.2f"|format(total) }}</p>
+            </div>
+            <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Shipping and taxes calculated at checkout.</p>
+            <div class="mt-6">
+                <a href="{{ url_for('checkout_page') }}" class="flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700">Checkout</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-12 bg-white dark:bg-slate-800 rounded-lg shadow">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Your cart is empty</h2>
+        <p class="mt-2 text-gray-500 dark:text-gray-400">Browse our marketplace to find your next treasure.</p>
+        <a href="{{ url_for('marketplace') }}" class="mt-6 inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700">Start Shopping</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

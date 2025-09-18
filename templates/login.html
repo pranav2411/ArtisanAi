@@ -1,0 +1,134 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<div class="flex items-center justify-center min-h-[calc(100vh-200px)]">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white dark:bg-slate-800 rounded-2xl shadow-lg">
+        <div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">Sign in</h2>
+            <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">Or <a href="{{ url_for('register_page') }}" class="font-medium text-indigo-600 hover:text-indigo-500">create a new account</a></p>
+        </div>
+
+        <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button id="email-tab" onclick="showTab('email')" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Email</button>
+                <button id="phone-tab" onclick="showTab('phone')" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Phone</button>
+            </nav>
+        </div>
+
+        <form id="email-login-form" class="space-y-6">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email address</label>
+                <input id="email" name="email" type="email" autocomplete="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+            </div>
+            <div>
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Sign in</button>
+            </div>
+        </form>
+
+        <div id="phone-login-form" class="hidden space-y-6">
+            <div>
+                <label for="phone-number" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                <input id="phone-number" type="tel" placeholder="+91 XXXXX XXXXX" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+            </div>
+            <div id="recaptcha-container"></div>
+            <button id="send-otp-btn" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">Send OTP</button>
+            <div id="otp-section" class="hidden">
+                <label for="otp" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Enter OTP</label>
+                <input id="otp" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                <button id="verify-otp-btn" class="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">Verify OTP</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    console.log('Checkpoint 1: Script block has started.');
+
+    function showTab(tabName) {
+        document.getElementById('email-login-form').style.display = tabName === 'email' ? 'block' : 'none';
+        document.getElementById('phone-login-form').style.display = tabName === 'phone' ? 'block' : 'none';
+        document.getElementById('email-tab').classList.toggle('tab-active', tabName === 'email');
+        document.getElementById('phone-tab').classList.toggle('tab-active', tabName !== 'email');
+    }
+    
+    const loginForm = document.getElementById('email-login-form');
+
+    if (loginForm) {
+        console.log('Checkpoint 2: Found the login form, adding event listener.');
+        loginForm.addEventListener('submit', function(event) {
+            console.log('Checkpoint 3: Form submission intercepted! Preventing default action.');
+            event.preventDefault(); 
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            console.log('Checkpoint 4: Attempting to sign in with Firebase...');
+            auth.signInWithEmailAndPassword(email, password)
+                .then(userCredential => userCredential.user.getIdToken())
+                .then(idToken => {
+                    console.log('Checkpoint 5: Firebase login successful. Sending token to backend.');
+                    fetch("{{ url_for('firebase_login') }}", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idToken: idToken })
+                    }).then(response => {
+                        if(response.ok) {
+                            console.log('Checkpoint 6: Backend authentication successful. Redirecting...');
+                            window.location.href = "{{ url_for('marketplace') }}";
+                        } else {
+                            alert('Backend authentication failed.');
+                        }
+                    });
+                })
+                .catch(error => alert('Firebase Login Error: ' + error.message));
+        });
+    } else {
+        console.error("Critical Error: Could not find the element with id 'email-login-form'.");
+    }
+
+
+    // Phone Auth Logic
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
+    const sendOtpBtn = document.getElementById('send-otp-btn');
+    const verifyOtpBtn = document.getElementById('verify-otp-btn');
+    const phoneNumberInput = document.getElementById('phone-number');
+
+    sendOtpBtn.addEventListener('click', () => {
+        const phoneNumber = phoneNumberInput.value;
+        const appVerifier = window.recaptchaVerifier;
+        auth.signInWithPhoneNumber(phoneNumber, appVerifier)
+            .then((confirmationResult) => {
+                window.confirmationResult = confirmationResult;
+                document.getElementById('otp-section').style.display = 'block';
+                alert('OTP sent!');
+            }).catch((error) => {
+                alert("Error sending OTP: " + error.message);
+                recaptchaVerifier.render().then(widgetId => recaptchaVerifier.reset(widgetId));
+            });
+    });
+
+    verifyOtpBtn.addEventListener('click', () => {
+        const code = document.getElementById('otp').value;
+        window.confirmationResult.confirm(code).then((result) => {
+            return result.user.getIdToken();
+        }).then(idToken => {
+            fetch("{{ url_for('firebase_login') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken: idToken })
+            }).then(response => {
+                if(response.ok) window.location.href = "{{ url_for('marketplace') }}";
+                else alert('Backend phone authentication failed.');
+            });
+        }).catch((error) => {
+            alert('Error verifying OTP: ' + error.message);
+        });
+    });
+</script>
+{% endblock %}

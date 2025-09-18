@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="text-center mb-12">
+        <h1 class="text-5xl font-extrabold text-slate-800 dark:text-white">AI Brand Kit Generator</h1>
+        <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">Define your brand's essence and let AI craft a professional identity for you.</p>
+    </div>
+    <form method="POST" action="{{ url_for('generate_brand_kit') }}" class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg space-y-6">
+        <div>
+            <label for="story" class="block text-lg font-semibold text-gray-800 dark:text-gray-200">Your Story</label>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Briefly describe your journey as an artisan. What makes your craft special?</p>
+            <textarea id="story" name="story" rows="4" required class="mt-1 block w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700"></textarea>
+        </div>
+        <div>
+            <label for="values" class="block text-lg font-semibold text-gray-800 dark:text-gray-200">Core Values</label>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">List a few words that represent your brand (e.g., Authentic, Handmade, Modern, Rustic).</p>
+            <input id="values" name="values" type="text" required class="mt-1 block w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700">
+        </div>
+        <div>
+            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Generate My Brand Kit
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

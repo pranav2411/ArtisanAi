@@ -1,0 +1,205 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="flex items-center justify-center min-h-[calc(100vh-200px)]">
+    <div class="w-full max-w-lg p-8 space-y-6 bg-white dark:bg-slate-800 rounded-2xl shadow-lg">
+        <h2 class="text-3xl font-extrabold text-gray-900 dark:text-white">Create a new account</h2>
+        <div class="border-b border-gray-200 dark:border-gray-700">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button id="email-reg-tab" onclick="showRegTab('email')" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm tab-active">Email</button>
+                <button id="phone-reg-tab" onclick="showRegTab('phone')" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Phone</button>
+            </nav>
+        </div>
+
+        <form id="email-register-form" class="space-y-6">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
+                <input id="email" name="email" type="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                <input id="password" name="password" type="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+            </div>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+                    <input id="name" name="name" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                </div>
+                <div>
+                     <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Account Type</label>
+                     <select id="type" name="type" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-200">
+                         <option value="buyer">I am a Buyer</option>
+                         <option value="artisan">I am an Artisan</option>
+                    </select>
+                </div>
+            </div>
+            <div id="artisan-fields" class="hidden space-y-6">
+                 <div>
+                    <label for="craft" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Primary Craft</label>
+                    <input id="craft" name="craft" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                 </div>
+                 <div>
+                    <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300">City, State</label>
+                    <input id="location" name="location" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                 </div>
+            </div>
+            <div id="buyer-fields" class="space-y-6">
+                <div>
+                    <label for="shipping_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Default Shipping Address</label>
+                    <input id="shipping_address" name="shipping_address" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                </div>
+            </div>
+            <div>
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Register with Email
+                </button>
+            </div>
+        </form>
+
+        <div id="phone-register-form" class="hidden space-y-6">
+            <div id="phone-reg-send-otp-section">
+                <div>
+                    <label for="phone-number-reg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                    <input id="phone-number-reg" type="tel" placeholder="+91 XXXXX XXXXX" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                </div>
+                <div id="recaptcha-container-reg" class="mt-4"></div>
+                <button type="button" id="send-otp-reg-btn" class="w-full mt-4 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">Send OTP</button>
+            </div>
+            <form id="phone-verify-form" class="hidden space-y-6">
+                <p class="text-center text-sm text-green-600">OTP Sent! Now, please fill out your details.</p>
+                 <div>
+                    <label for="otp-reg" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Enter OTP</label>
+                    <input id="otp-reg" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                 </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="name-phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+                        <input id="name-phone" name="name" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                    </div>
+                    <div>
+                         <label for="type-phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Account Type</label>
+                         <select id="type-phone" name="type" required class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-200">
+                             <option value="buyer">I am a Buyer</option>
+                             <option value="artisan">I am an Artisan</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="artisan-fields-phone" class="hidden space-y-6">
+                      <div>
+                         <label for="craft-phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Primary Craft</label>
+                         <input id="craft-phone" name="craft" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                      </div>
+                      <div>
+                         <label for="location-phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">City, State</label>
+                         <input id="location-phone" name="location" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                      </div>
+                </div>
+                <div id="buyer-fields-phone" class="space-y-6">
+                    <div>
+                        <label for="shipping_address-phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Default Shipping Address</label>
+                        <input id="shipping_address-phone" name="shipping_address" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                    </div>
+                </div>
+                 <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Verify & Register
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    function showRegTab(tabName) {
+        document.getElementById('email-register-form').style.display = tabName === 'email' ? 'block' : 'none';
+        document.getElementById('phone-register-form').style.display = tabName === 'phone' ? 'block' : 'none';
+        document.getElementById('email-reg-tab').classList.toggle('tab-active', tabName === 'email');
+        document.getElementById('phone-reg-tab').classList.toggle('tab-active', tabName !== 'email');
+    }
+    // Common logic for email form
+    document.getElementById('type').addEventListener('change', function() {
+        const isArtisan = this.value === 'artisan';
+        document.getElementById('artisan-fields').style.display = isArtisan ? 'block' : 'none';
+        document.getElementById('buyer-fields').style.display = isArtisan ? 'none' : 'block';
+        document.getElementById('craft').required = isArtisan;
+        document.getElementById('location').required = isArtisan;
+        document.getElementById('shipping_address').required = !isArtisan;
+    });
+    document.getElementById('type').dispatchEvent(new Event('change'));
+
+    document.getElementById('email-register-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const form = e.target;
+        const formData = new FormData(form);
+        auth.createUserWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                const user = userCredential.user;
+                const data = {
+                    uid: user.uid, email: email, name: formData.get('name'), type: formData.get('type'),
+                    craft: formData.get('craft'), location: formData.get('location'), shipping_address: formData.get('shipping_address')
+                };
+                fetch("{{ url_for('register_firestore') }}", {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+                }).then(response => {
+                    if (response.ok) { alert('Registration successful! Please log in.'); window.location.href = "{{ url_for('login_page') }}"; }
+                    else { alert('Error creating user profile in database.'); }
+                });
+            })
+            .catch((error) => alert('Firebase Registration Error: ' + error.message));
+    });
+
+    // Common logic for phone form
+    document.getElementById('type-phone').addEventListener('change', function() {
+        const isArtisan = this.value === 'artisan';
+        document.getElementById('artisan-fields-phone').style.display = isArtisan ? 'block' : 'none';
+        document.getElementById('buyer-fields-phone').style.display = isArtisan ? 'none' : 'block';
+        document.getElementById('craft-phone').required = isArtisan;
+        document.getElementById('location-phone').required = isArtisan;
+        document.getElementById('shipping_address-phone').required = !isArtisan;
+    });
+    document.getElementById('type-phone').dispatchEvent(new Event('change'));
+
+    // Phone Registration Logic
+    window.recaptchaVerifierReg = new firebase.auth.RecaptchaVerifier('recaptcha-container-reg', { 'size': 'invisible' });
+    const sendOtpRegBtn = document.getElementById('send-otp-reg-btn');
+
+    sendOtpRegBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const phoneNumber = document.getElementById('phone-number-reg').value;
+        const appVerifier = window.recaptchaVerifierReg;
+        auth.signInWithPhoneNumber(phoneNumber, appVerifier)
+            .then((confirmationResult) => {
+                window.confirmationResultReg = confirmationResult;
+                document.getElementById('phone-reg-send-otp-section').style.display = 'none';
+                document.getElementById('phone-verify-form').style.display = 'block';
+            }).catch((error) => {
+                alert("Error sending OTP: " + error.message);
+                recaptchaVerifierReg.render().then(widgetId => recaptchaVerifierReg.reset(widgetId));
+            });
+    });
+
+    document.getElementById('phone-verify-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const code = document.getElementById('otp-reg').value;
+        const form = e.target;
+        const formData = new FormData(form);
+        window.confirmationResultReg.confirm(code)
+            .then((result) => {
+                const user = result.user;
+                const data = {
+                    uid: user.uid, phone: user.phoneNumber, name: formData.get('name'), type: formData.get('type'),
+                    craft: formData.get('craft'), location: formData.get('location'), shipping_address: formData.get('shipping_address')
+                };
+                fetch("{{ url_for('register_firestore') }}", {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+                }).then(response => {
+                    if (response.ok) { alert('Registration successful! Please log in.'); window.location.href = "{{ url_for('login_page') }}"; }
+                    else { alert('Error creating user profile in database.'); }
+                });
+            }).catch((error) => {
+                alert('Error verifying OTP: ' + error.message);
+            });
+    });
+</script>
+{% endblock %}

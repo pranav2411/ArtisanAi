@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+{% block content %}
+<main class="container mx-auto px-4 py-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg">
+    <div>
+        <img src="{{ product.imageUrl }}" alt="{{ product.name }}" class="w-full h-auto object-cover rounded-lg shadow-md">
+    </div>
+    <div class="flex flex-col">
+        <h1 class="text-4xl font-extrabold text-slate-800 dark:text-white">{{ product.name }}</h1>
+        <div class="flex items-center mt-2 mb-4">
+            <img src="{{ artisan.avatar }}" class="w-10 h-10 rounded-full mr-3" alt="{{ artisan.name }}"/>
+            <div>
+                <p class="text-md font-semibold text-indigo-700 dark:text-indigo-400">{{ artisan.name }}</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400">{{ artisan.location }}</p>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-bold text-slate-700 dark:text-slate-200 mt-4 mb-2">The Story of This Piece</h2>
+        <div class="prose dark:prose-invert text-slate-600 dark:text-slate-300 mb-6">
+            <p>{{ product.ai_description or product.description | safe }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-sm mb-6">
+            <div><strong class="font-semibold text-slate-700 dark:text-slate-200">Materials:</strong> {{ product.materials }}</div>
+            <div><strong class="font-semibold text-slate-700 dark:text-slate-200">Dimensions:</strong> {{ product.dimensions }}</div>
+            <div><strong class="font-semibold text-slate-700 dark:text-slate-200">Stock:</strong> {{ product.stock }} available</div>
+        </div>
+
+        <div class="mt-auto pt-6 border-t border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center">
+                <span class="text-4xl font-bold text-slate-800 dark:text-white">₹{{ "%.2f"|format(product.price) }}</span>
+                <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">Add to Cart</a>
+            </div>
+        </div>
+    </div> 
+
+    <div class="lg:col-span-2 mt-8 p-6 bg-slate-100 dark:bg-slate-800 rounded-lg">
+        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-4">Have a Question About This Product?</h3>
+        <div id="chat-history" class="h-48 overflow-y-auto border dark:border-slate-700 rounded-lg p-3 mb-4 bg-white dark:bg-slate-900 space-y-2 flex flex-col">
+            <div class="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-slate-800 dark:text-slate-200 self-start mr-auto max-w-md w-fit">Ask me anything about the materials, size, or story of the "{{ product.name }}"!</div>
+        </div>
+        <div class="flex space-x-2">
+            <input id="chat-input" type="text" placeholder="Type your question..." data-product-id="{{ product.id }}" class="flex-grow px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-700">
+            <button id="chat-send" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700">Send</button>
+        </div>
+    </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
+    const chatHistory = document.getElementById('chat-history');
+
+    const appendMessage = (text, sender) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('p-2', 'rounded-lg', 'max-w-md', 'w-fit');
+        if (sender === 'user') {
+            messageDiv.classList.add('bg-blue-500', 'text-white', 'self-end', 'ml-auto');
+            messageDiv.textContent = text;
+        } else {
+            messageDiv.classList.add('bg-indigo-100', 'dark:bg-indigo-900/50', 'text-slate-800', 'dark:text-slate-200', 'self-start', 'mr-auto', 'prose', 'dark:prose-invert', 'max-w-full');
+            messageDiv.innerHTML = text; // Render AI's markdown
+        }
+        chatHistory.appendChild(messageDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    };
+
+    const handleChat = async () => {
+        const userInput = chatInput.value;
+        const productId = chatInput.dataset.productId;
+        if (!userInput.trim()) return;
+
+        appendMessage(userInput, 'user');
+        chatInput.value = '';
+        chatSend.disabled = true;
+
+        try {
+            const response = await fetch("{{ url_for('product_chat') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: userInput, product_id: productId })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            appendMessage(data.reply_html, 'ai');
+        } catch (error) {
+            console.error('Chat error:', error);
+            appendMessage('<p>Sorry, I had a little trouble connecting. Please check the console and try again.</p>', 'ai');
+        } finally {
+            chatSend.disabled = false;
+            chatInput.focus();
+        }
+    };
+
+    chatSend.addEventListener('click', handleChat);
+    chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleChat();
+        }
+    });
+</script>
+{% endblock %}

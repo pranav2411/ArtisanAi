@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg">
+        <h1 class="text-3xl font-extrabold text-slate-800 dark:text-white">Artisan Verification</h1>
+        {% if artisan.verification_status == 'pending' %}
+            <p class="mt-4 text-lg text-yellow-700 bg-yellow-100 p-4 rounded-lg">Your application is <span class="font-bold">Pending Review</span>. Please upload the required documents below to activate your seller profile.</p>
+        {% elif artisan.verification_status == 'rejected' %}
+             <p class="mt-4 text-lg text-red-700 bg-red-100 p-4 rounded-lg">Your application was <span class="font-bold">Rejected</span>. Please review the feedback and resubmit if necessary.</p>
+        {% elif artisan.verification_status == 'submitted' %}
+             <p class="mt-4 text-lg text-blue-700 bg-blue-100 p-4 rounded-lg">Your documents have been <span class="font-bold">Submitted</span> and are awaiting review by our team.</p>
+        {% endif %}
+        <form action="{{ url_for('upload_verification_docs') }}" method="POST" enctype="multipart/form-data" class="space-y-6 mt-6">
+            <div>
+                <label class="block text-lg font-semibold text-gray-800 dark:text-gray-200">Proof of Identity (Aadhaar/PAN Card)</label>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">A clear photo of the front of your government-issued ID.</p>
+                <input type="file" name="identity_proof" required class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+            </div>
+            <div>
+                <label class="block text-lg font-semibold text-gray-800 dark:text-gray-200">Business/GST Number (Optional)</label>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">If you have a GST number, please provide a copy of the certificate.</p>
+                <input type="file" name="business_proof" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+            </div>
+             <div>
+                <label class="block text-lg font-semibold text-gray-800 dark:text-gray-200">Proof of Work</label>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">A few photos of your workshop or you creating your craft.</p>
+                <input type="file" name="work_proof" multiple required class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+            </div>
+            <div>
+                 <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Submit for Verification
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
